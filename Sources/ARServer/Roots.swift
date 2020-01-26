@@ -78,7 +78,7 @@ func initRoots() {
         let (database, connection) = try connectToDatabase()
         
         // Get the password and salt for the user
-        let query = "select password, salt from users where id = ?;"
+        let query = "select password, salt, isAdmin from users where id = ?;"
         let users = try database.execute(query, [fields["username"]!], connection)
         
         Log.debug("users = \(users)")
@@ -89,6 +89,7 @@ func initRoots() {
         // Get both bales from MySQL result
         guard let savedPassword = user["password"]?.string else { return }
         guard let savedSalt = user["salt"]?.string else { return }
+        guard let isAdmin = user["isAdmin"]?.bool else { return }
         
         Log.debug("savedPassword = \(savedPassword), savedSalt = \(savedSalt)")
         
@@ -116,6 +117,7 @@ func initRoots() {
             var result = [String: Any]()
             result["status"] = "ok"
             result["token"] = token
+            result["isAdmin"] = isAdmin
             
             do {
                 try response.status(.OK).send(json: result).end()
